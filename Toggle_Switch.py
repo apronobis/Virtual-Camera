@@ -1,7 +1,7 @@
 import sys
-from PySide6.QtCore import QRectF, QPropertyAnimation, QEasingCurve, Qt, Property
-from PySide6.QtGui import QPainter, QColor
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QApplication
+from PySide6.QtCore import QRectF, QPropertyAnimation, QEasingCurve, Qt, Property, QSize
+from PySide6.QtGui import QPainter, QColor, QPixmap, QPainterPath, QIcon
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QApplication, QStyledItemDelegate, QStyle
 from PySide6.QtCore import Signal
 
 
@@ -35,6 +35,7 @@ class ToggleSwitch(QWidget):
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
             self.setChecked(not self._checked)
+            QWidget.mousePressEvent(self.parent(), event)
 
     @Property(float)
     def thumb_pos(self):
@@ -74,6 +75,47 @@ class LabeledToggleSwitch(QWidget):
         layout.addStretch()
         layout.setContentsMargins(0, 0, 0, 0)
 
+
+class RoundedItemDelegate(QStyledItemDelegate):
+    def __init__(self, radius=10, parent=None):
+        super().__init__(parent)
+        self.radius = radius
+
+    def paint(self, painter, option, index):
+        painter.save()
+
+        # Setup the drawing rectangle
+        rect = option.rect
+
+        # Enable antialiasing for smoother curves
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        # Determine background color based on selection
+        bgColor = QColor(150, 150, 150) if option.state & QStyle.State_Selected else QColor(0, 0, 0)
+        painter.setBrush(bgColor)
+        painter.setPen(Qt.NoPen)
+        painter.drawRoundedRect(rect, self.radius, self.radius)
+
+        # Attempt to draw the icon
+        icon = index.data(Qt.DecorationRole)  # Fetch the icon
+        if icon and isinstance(icon, QIcon):
+            pixmap = icon.pixmap(140, 100, QIcon.Normal, QIcon.On)  # Only handle icons properly initialized
+            image_rect = QRectF(rect).adjusted(5, 5, -5, -5).toRect()  # Adjust rect and convert to QRect for drawing
+
+            # Create a clipping path for rounded corners
+            clipPath = QPainterPath()
+            clipPath.addRoundedRect(image_rect, self.radius, self.radius)
+            painter.setClipPath(clipPath)
+            if option.state & QStyle.State_Selected:
+                painter.setOpacity(0.4)  # Set to 50% opacity for transparency
+
+            # Draw the pixmap within the clipped path
+            painter.drawPixmap(image_rect, pixmap)
+
+        painter.restore()
+
+    def sizeHint(self, option, index):
+        return QSize(150, 120)  # Adjust based on your desired item geometry
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

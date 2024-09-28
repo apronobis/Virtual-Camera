@@ -20,7 +20,7 @@ def background_change(new_background_image, source_image, blur_checked, chroma_c
     # foreground with alpha channel
     eta_time = time.time() - start
     logging.info(f'ETA time for changing the background is {eta_time}.')
-    print(eta_time)
+    # print(eta_time)
     # Ensure the new background is the same size as the foreground
     height, width, _ = source_image.shape
     if foreground.shape[2] == 3:

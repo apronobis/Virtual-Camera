@@ -6,8 +6,9 @@ def get_camera_details_windows():
     cameras = []
     wmi = win32com.client.GetObject("winmgmts:")
     for item in wmi.InstancesOf("Win32_PnPEntity"):
-        if "camera" in (item.Description or "").lower() or "video" in (item.Description or "").lower():
-            cameras.append(item.Name)
+        # if "camera" in (item.Description or "").lower() or "video" in (item.Description or "").lower():
+        cameras.append(item.Name)
+        print(item.Name)
     return cameras
 
 
@@ -43,5 +44,12 @@ def update_camera_descriptions():
 
     return camera_details
 
+
+import win32com.client
+
+
 if __name__ == '__main__':
-    print(get_camera_details_windows())
+    wmi = win32com.client.GetObject("winmgmts:")
+    for usb in wmi.InstancesOf("Win32_USBHub"):
+        print(usb.deviceID)
+    # print(get_camera_details_windows())
